@@ -30,12 +30,33 @@ def get_train_test_split(df_name):
             lambda row: means_titanic_age.loc[int(row["Pclass"])] if np.isnan(row['Age']) else row['Age'],
             axis=1
         )
-        X = df.drop(["Survived", "Cabin", "Name", "Ticket"], axis=1)
+        X = df.drop(["Survived", "Cabin", "Name", "Ticket", "Embarked"], axis=1)
         y = df["Survived"]
         return train_test_split(pd.get_dummies(X, drop_first=True), y, random_state=1, stratify=y, test_size=0.1)
 
 
 # %%
 X_train, X_test, y_train, y_test = get_train_test_split(df_name)
+y_train
 # %%
 
+
+from sklearn.manifold import TSNE
+
+from sklearn.datasets import load_iris
+from sklearn.decomposition import PCA
+
+
+X_tsne = TSNE(learning_rate=100).fit_transform(X_train)
+X_pca = PCA().fit_transform(X_train)
+
+#y_train = y_train.map({"Iris-virginica": 0, "Iris-setosa" : 1,  "Iris-versicolor" : 2})
+plt.figure(figsize=(10, 5))
+plt.subplot(121)
+plt.scatter(X_tsne[:, 0], X_tsne[:, 1], c=y_train)
+plt.subplot(122)
+plt.scatter(X_pca[:, 0], X_pca[:, 1], c=y_train);
+
+# %%
+
+# %%
