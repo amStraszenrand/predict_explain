@@ -1,0 +1,7 @@
+Predict_explain -> kNN:
+
+i: Classes of all kNN
+ii: How secure is algorithm
+iii: New confusion matrix with uncertainity col
+
+(iv: What features are important ones -> Why is decision as it is?s)

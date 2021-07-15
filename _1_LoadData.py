@@ -10,6 +10,9 @@ from sklearn.metrics import confusion_matrix, accuracy_score
 
 # %%
 df_iris = pd.read_csv("Data/iris.csv")
+df_titanic = pd.read_csv("Data/titanic.csv", index_col=0)
+df_titanics = pd.read_csv("Data/titanic.csv", index_col=0)
+
 # %%
 a = 4 +4
 # %%

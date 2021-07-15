@@ -2,3 +2,6 @@ https://christophm.github.io/interpretable-ml-book/lime.html
 
 https://github.com/marcotcr/lime
 
+@karl https://christophm.github.io/interpretable-ml-book/counterfactual.html
+
+https://reader.elsevier.com/reader/sd/pii/S1566253519308103?token=832D5C0B0B6D36FDE72C[…]8F1377&originRegion=eu-west-1&originCreation=20210713141807
