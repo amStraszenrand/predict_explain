@@ -41,7 +41,7 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
         return self.model.kneighbors(X, n_neighbors, return_distance)
 
     def predict_explain(self, X):
-        """Raise explaination of the prediction by reporting more results.
+        """Raise explanaition of the prediction by reporting more results.
 
         Parameters
         ----------
@@ -54,11 +54,12 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
         y_predict_explain : dict shape (n_queries,4) with \
             "Prediction" : predicted target value, \
              "Confidence" : confidence of the prediction, \
-             "Explanation" : explanation of the prediction, \
+             "Explanation" : explanaition of the prediction, \
              "Features_Distribution": informations about the features distribution
 
         """
         
+        # Get information about the features from the input data
         try:
             feature_names = X.columns
             index_column = X.index
@@ -67,6 +68,7 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
             
         X = check_array(X, accept_sparse='csr')
         
+        # Get details about the nearest neighbours
         neigh_dist, neigh_ind = self.kneighbors(X)
         neigh_y = self.model._y[neigh_ind]
         neigh_classes=[self.model.classes_[i] for i in neigh_y]
@@ -76,19 +78,23 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
 
         prediction = y_pred
         
+        # Compute if the prediction is rather sure or unsure by prediction probability threshold
         confidence_threshold = y_pred_prob.max(axis=1) >= self.my_predict_proba_threshold
         confidence_nearestNeighbour = y_pred == [neigh_class[0] for neigh_class in neigh_classes]
         confidence = confidence_threshold & confidence_nearestNeighbour
         
+        # Write the output string of the prediction explanation
         explanation = self._write_explanation(X, prediction, confidence_threshold, confidence_nearestNeighbour, neigh_classes)
         
+        # Get infos about the features from the training data
         features_distribution = ""
         neigh_X = []
         if feature_names.any(): 
             A = self.model._fit_X[neigh_ind]
             neigh_X = [pd.DataFrame(a, columns=feature_names) for a in A]
         
-        features_distribution = self._write_features_distribution(X, neigh_dist, neigh_X, feature_names)
+        # Write the output string that gives info about the features distribution
+        features_distribution = self._write_features_distribution(X, confidence_threshold, neigh_dist, neigh_X, feature_names, neigh_classes)
         
         answer = pd.DataFrame({
             "Prediction" : prediction,
@@ -101,6 +107,21 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
 
     
     def _write_explanation(self, X,  prediction, conf_thresh, conf_nearNeigh, neigh_classes):
+        """Write the output string of the prediction explanation.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_queries, n_features)
+            Test samples.
+        prediction: predicted target values for observations in X
+        conf_thresh: the threshold to be reached by the prediction probability
+        conf_nearNeigh: the distribution homegenity of the target values of the nearest neighbours around X
+        neigh_classes: the target values of the nearest neighbours around X
+
+        Returns
+        -------
+        explanation : a string containing infos about "why this prediction?"
+        """
         
         explanation = []
         
@@ -125,7 +146,22 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
         
         return explanation
 
-    def _write_features_distribution(self, X, neigh_dist, neigh_X, feature_names):
+    def _write_features_distribution(self, X, conf_thresh, neigh_dist, neigh_X, feature_names, neigh_classes):
+        """        # Write the output string that gives info about the features distribution.
+
+        Parameters
+        ----------
+        X : array-like of shape (n_queries, n_features)
+            Test samples.
+        conf_thresh: the threshold to be reached by the prediction probability
+        neigh_dist: the distance of the nearest neighbours to X
+        neigh_X: the features of the nearest neighbours of X
+        feature_names: the columns names of the features
+
+        Returns
+        -------
+        explanation : a string containing infos about "how are the features around X distributed?"
+        """
         
         features_distribution = []
         
@@ -144,12 +180,12 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
             
             if exact_matches:
                 feat += " (they even map exactly on the "
-                feat += f"nearest neighbor" if exact_matches == 1 else f"{exact_matches} nearest neighbors). "
+                feat += f"nearest neighbor). " if exact_matches == 1 else f"{exact_matches} nearest neighbors). "
             else:
                 feat += ". "
            
             
-            if neigh_X == []:
+            if len(neigh_X) == 0:
                 feat += "Specific informations about the features however cannot be given."
             else:
                 scaler = MinMaxScaler()
@@ -171,6 +207,8 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
                     same_features = list(same_features[0].intersection(*same_features))
                     diff_feature_ind = np.where(metrics_distance == np.max(metrics_distance))
 
+                if len(same_features) > 0:
+                    same_features_ind = [neigh_X[0].columns.get_loc(feature) for feature in same_features]
                 r = np.random.randint(len(diff_feature_ind[-1]))
                 diff_feature_ind = [ind[r] for ind in diff_feature_ind]
             
@@ -193,11 +231,26 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
                     feat += f"Therefore no feature differs from any of the {self.model.get_params()['n_neighbors']} nearest neighbours!"
                 else:
                     feat += f"However, the feature "
-                    feat += f"'{feature_names[diff_feature_ind[-1]]}' differs at most "
+                    feat += f"'{feature_names[diff_feature_ind[-1]]}' differs remarkably "
                     feat += f"('{x[diff_feature_ind[-1]]}' "
                     feat += f"vs. '{float(neigh_X[i].iloc[0,diff_feature_ind[-1]])}')." if len(diff_feature_ind) == 1 else f"vs. '{neigh_X[i].iloc[diff_feature_ind[0], diff_feature_ind[1]]}') "
-                    feat += f"throughout the inspected  {self.model.get_params()['n_neighbors']} nearest neighbours."
+                    feat += f"throughout the inspected  {self.model.get_params()['n_neighbors']} nearest neighbours. "
             
+                feat += f"Since the nearest neighbours have "
+                feat += "homogeneous " if conf_thresh[i] else "diverse "
+                feat += f"target values, around the "
+                if len(same_features) == 0:
+                    feat += f"features {feature_names.values} with values {x} "
+                elif len(same_features) == 1:
+                    feat += f"feature {same_features} with value {x[same_features_ind]} "
+                else:
+                    feat += f"features {same_features} with values {x[same_features_ind]} "
+                feat += f"there seems to be "
+                if  conf_thresh[i]: 
+                    feat += f"a clustering of the target value '{stats.mode(neigh_classes[i]).mode[0]}'."
+                else:
+                    feat += f"an intersection of the target values {set(neigh_classes[i])}."
+        
             features_distribution.append(feat)        
         
         return features_distribution

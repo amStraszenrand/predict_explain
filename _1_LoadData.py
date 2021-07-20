@@ -15,3 +15,5 @@ df_loans = pd.read_csv("Data/loans_2007.csv", index_col = 0)#, dtype={"member_id
 df_cells = pd.read_csv("Data/cell_samples.csv")
 
 # %%
+df_titanic
+# %%
