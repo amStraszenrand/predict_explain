@@ -11,7 +11,6 @@ import _4_Model_kNN
 
 X_train, X_test, y_train, y_test = _4_Model_kNN.X_train, _4_Model_kNN.X_test, _4_Model_kNN.y_train, _4_Model_kNN.y_test
 X_predict_explain, y_predict_explain = _4_Model_kNN.X_predict_explain, _4_Model_kNN.y_predict_explain
-
 # %%
 import Objects.Plot_kNN as plot_kNN
 

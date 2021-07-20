@@ -129,7 +129,7 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
             expl = f"The prediction '{prediction[i]}' is "
             expl += "quite sure: " if conf_thresh[i] & conf_nearNeigh[i] else "rather unsure: "
             
-            expl += f"On one hand the {self.model.get_params()['n_neighbors']} nearest neighbours have "
+            expl += f"On the one hand the {self.model.get_params()['n_neighbors']} nearest neighbours have "
             expl += "homogeneous " if conf_thresh[i] else "diverse "
             expl += f"target values ("
             class_values, class_counts = np.unique(neigh_classes[i], return_counts=True)

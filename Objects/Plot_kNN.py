@@ -63,7 +63,7 @@ class Plot_kNN():
                            name=y_pred_expl_grouped, 
                            mode="markers",
                             marker={
-                                "color" : plotly_colors[self.y_predict_explain["Prediction"].unique().tolist().index(y_pred_expl_grouped)]
+                                "color" : plotly_colors[self.y_train.unique().tolist().index(y_pred_expl_grouped)]
                                 },
                             customdata=_costumdata.loc[X_tsne_grouped.index],
                             hovertemplate=_hovertemplate
@@ -83,7 +83,7 @@ class Plot_kNN():
                             mode="markers",
                             marker={
                                 "line" : {"width" : 2},
-                                "color" : plotly_colors[self.y_predict_explain["Prediction"].unique().tolist().index(y_pred_expl_grouped[0])]
+                                "color" : plotly_colors[self.y_train.unique().tolist().index(y_pred_expl_grouped[0])]
                                 },
                             customdata=_costumdata.loc[X_tsne_grouped.index],
                             hovertemplate=_hovertemplate

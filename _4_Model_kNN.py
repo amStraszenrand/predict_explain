@@ -1,17 +1,5 @@
 # %%
-import numpy as np###
-import pandas as pd
-from matplotlib import pyplot as plt
 import seaborn as sns
-import plotly.express as plx
-
-from scipy import stats
-
-from sklearn import neighbors
-
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import confusion_matrix, accuracy_score
-
 
 # %%
 import _2_Preprocessing
@@ -25,14 +13,21 @@ model = my_kNN.my_KNeighborsClassifier(n_neighbors=5, weights="uniform")
 
 # %%
 model.fit(X_train, y_train)
-
-# %%
-X_predict_explain=X_test[:3]
+X_predict_explain=X_test
 #print(X_predict_explain)
 
 y_predict_explain=model.predict_explain(X_predict_explain)
-y_predict_explain.to_csv("test.csv", sep=";")
+y_predict_explain.to_json("kNN_predict_explain.json")
 # %%
 
+import Objects.my_Confusion_Matrix as my_cm
+
+y_pred= y_predict_explain["Prediction"]
+
+sns.heatmap(my_cm.my_confusion_matrix(y_test, y_pred, y_predict_explain["Confidence"]), annot=True)
+
+# %%
+
+# %%
 
 # %%
