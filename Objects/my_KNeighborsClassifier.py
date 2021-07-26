@@ -15,31 +15,25 @@ from sklearn.utils.validation import _num_samples
 from sklearn.preprocessing import Normalizer
 from sklearn.preprocessing import MinMaxScaler
 
+import Objects.Interface_predict_explain as I_predict_explain
 # %%
-class my_KNeighborsClassifier(KNeighborsClassifier):
+class my_KNeighborsClassifier(KNeighborsClassifier, I_predict_explain.Interface_predict_explain):
     def __init__(self,  my_predict_proba_threshold = 0.75, my_neigh_dist = None, **kwargs):
-        self.model = KNeighborsClassifier(**kwargs)
+        super().__init__(**kwargs)
         self.my_predict_proba_threshold = my_predict_proba_threshold
         self.my_neigh_dist = my_neigh_dist
-        self.my_neigh_dist_median_frac = 0.5
+        self.my_neigh_dist_fraction_of_median = 0.5
+
 
     def fit(self, X, y):
-        self.model.fit(X, y)
+        super().fit(X, y)
         
         if not self.my_neigh_dist:
-            all_distances, _ =  self.kneighbors(X, n_neighbors=self.model.n_neighbors + 1, return_distance=True)
+            all_distances, _ =  self.kneighbors(X, n_neighbors=self.n_neighbors + 1, return_distance=True)
             all_not_self_referred_distances = [dist for sublist in all_distances for dist in sublist[1:]]
-            self.my_neigh_dist = np.median(all_not_self_referred_distances) * self.my_neigh_dist_median_frac
+            self.my_neigh_dist = np.median(all_not_self_referred_distances) * self.my_neigh_dist_fraction_of_median
 
-    def predict(self, X):
-        return self.model.predict(X)
-
-    def predict_proba(self, X):
-        return self.model.predict_proba(X)
     
-    def kneighbors(self, X, n_neighbors=None, return_distance=True):
-        return self.model.kneighbors(X, n_neighbors, return_distance)
-
     def predict_explain(self, X):
         """Raise explanaition of the prediction by reporting more results.
 
@@ -70,11 +64,11 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
         
         # Get details about the nearest neighbours
         neigh_dist, neigh_ind = self.kneighbors(X)
-        neigh_y = self.model._y[neigh_ind]
-        neigh_classes=[self.model.classes_[i] for i in neigh_y]
+        neigh_y = self._y[neigh_ind]
+        neigh_classes=[self.classes_[i] for i in neigh_y]
 
-        y_pred = self.model.predict(X)
-        y_pred_prob = self.model.predict_proba(X)
+        y_pred = self.predict(X)
+        y_pred_prob = self.predict_proba(X)
 
         prediction = y_pred
         
@@ -90,7 +84,7 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
         features_distribution = ""
         neigh_X = []
         if feature_names.any(): 
-            A = self.model._fit_X[neigh_ind]
+            A = self._fit_X[neigh_ind]
             neigh_X = [pd.DataFrame(a, columns=feature_names) for a in A]
         
         # Write the output string that gives info about the features distribution
@@ -129,7 +123,7 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
             expl = f"The prediction '{prediction[i]}' is "
             expl += "quite sure: " if conf_thresh[i] & conf_nearNeigh[i] else "rather unsure: "
             
-            expl += f"On the one hand the {self.model.get_params()['n_neighbors']} nearest neighbours have "
+            expl += f"On the one hand the {self.n_neighbors} nearest neighbours have "
             expl += "homogeneous " if conf_thresh[i] else "diverse "
             expl += f"target values ("
             class_values, class_counts = np.unique(neigh_classes[i], return_counts=True)
@@ -225,16 +219,16 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
                 elif nearby_distances > 1:
                     feat += f"as those {nearby_distances} nearest neighbours have. "
                 else:
-                    feat += f"in the range of the {self.model.get_params()['n_neighbors']} nearest neighbours. "
+                    feat += f"in the range of the {self.n_neighbors} nearest neighbours. "
                 
                 if  np.max(metrics_distance) == 0:
-                    feat += f"Therefore no feature differs from any of the {self.model.get_params()['n_neighbors']} nearest neighbours!"
+                    feat += f"Therefore no feature differs from any of the {self.n_neighbors} nearest neighbours!"
                 else:
                     feat += f"However, the feature "
                     feat += f"'{feature_names[diff_feature_ind[-1]]}' differs remarkably "
                     feat += f"('{x[diff_feature_ind[-1]]}' "
                     feat += f"vs. '{float(neigh_X[i].iloc[0,diff_feature_ind[-1]])}')." if len(diff_feature_ind) == 1 else f"vs. '{neigh_X[i].iloc[diff_feature_ind[0], diff_feature_ind[1]]}') "
-                    feat += f"throughout the inspected  {self.model.get_params()['n_neighbors']} nearest neighbours. "
+                    feat += f"throughout the inspected  {self.n_neighbors} nearest neighbours. "
             
                 feat += f"Since the nearest neighbours have "
                 feat += "homogeneous " if conf_thresh[i] else "diverse "
@@ -254,3 +248,4 @@ class my_KNeighborsClassifier(KNeighborsClassifier):
             features_distribution.append(feat)        
         
         return features_distribution
+# %%

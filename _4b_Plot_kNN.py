@@ -22,5 +22,10 @@ plot_kNN.TSNE(X_predict_explain, y_predict_explain)
 # %%
 plot_kNN.PCA(X_predict_explain, y_predict_explain)
 # %%
+import Objects.my_Confusion_Matrix as my_cm
 
+y_pred= y_predict_explain["Prediction"]
+
+sns.heatmap(my_cm.my_confusion_matrix(y_test, y_pred, y_predict_explain["Confidence"]), annot=True)
+plt.xticks(rotation=45)
 # %%

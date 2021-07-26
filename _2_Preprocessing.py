@@ -12,7 +12,7 @@ from sklearn.metrics import confusion_matrix, accuracy_score, roc_auc_score
 import _1_LoadData
 
 # %%
-df_name = "titanic"
+df_name = "iris"
 
 # %%
 def get_train_test_split(df_name):
