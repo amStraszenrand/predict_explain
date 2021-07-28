@@ -79,11 +79,11 @@ def patient_risk_factors(model, patient_data):
 
 [y_test[y_test == y].index[0] for y in y_test.value_counts().index]
 # %%
-i = 643
+i = 93
 print(y_test.loc[i])
 patient_risk_factors(my_model, X_test.loc[i])
 # %%
-i = 388
+i = 113
 print(y_test.loc[i])
 patient_risk_factors(my_model, X_test.loc[i])
 # %%
@@ -117,24 +117,45 @@ explainer = lime.lime_tabular.LimeTabularExplainer(np.array(X_train), feature_na
 [y_test[y_test == y].index[0] for y in y_test.value_counts().index]
 
 # %%
-i = 643
+i = 93
 print(y_test.loc[i])
 
-exp = explainer.explain_instance(X_test.loc[i], knn.predict_proba, top_labels=1)
+exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
 exp.show_in_notebook(show_table=False, show_all=True)
 # %%
-i = 388
+i = 113
 print(y_test.loc[i])
 
-exp = explainer.explain_instance(X_test.loc[i], knn.predict_proba, top_labels=1)
+exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
 exp.show_in_notebook(show_table=False, show_all=True)
 # %%
 i = 7
 print(y_test.loc[i])
 
-exp = explainer.explain_instance(X_test.loc[i], knn.predict_proba, top_labels=1)
+exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
 exp.show_in_notebook(show_table=False, show_all=True)
 # %%
+
+#
+# ----- Get alepython explanation for some y -----
+#
+from alepython import ale_plot
+
+my_model.fit(X_train, y_train.map({"Iris-versicolor": 0, "Iris-setosa":1, "Iris-virginica":2}))
+
+plt.rc("figure", figsize=(9, 6))
+for feature_name in most_important_features:
+    ale_plot(
+        my_model,
+        X_train,
+        feature_name,
+        bins=20,
+        monte_carlo=True,
+        monte_carlo_rep=100,
+        monte_carlo_ratio=0.6,
+    )
+# %%
+
 
 # %%
 
