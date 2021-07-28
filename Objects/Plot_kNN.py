@@ -27,7 +27,8 @@ class Plot_kNN():
         
         fig = self._plot(X_tsne)
         fig.update_layout(height=self.height, width=self.width, title_text="Dimensionality reduction for y_predict_explain: TSNE visualization")
-        fig.show()
+        
+        return fig
     
     def PCA(self, X_predict_explain, y_predict_explain):
         self.X_predict_explain = X_predict_explain
@@ -37,7 +38,8 @@ class Plot_kNN():
         
         fig = self._plot(X_pca)
         fig.update_layout(height=self.height, width=self.width, title_text="Dimensionality reduction for y_predict_explain: PCA visualization")
-        fig.show()
+        
+        return fig
 
     def _prepare_X_y(self):
         for i in self.y_predict_explain.index:

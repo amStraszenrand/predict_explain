@@ -106,8 +106,7 @@ for feature_name in most_important_features:
 # ----- Get LIME explanation for some y -----
 #
 
-import lime
-import lime.lime_tabular
+import lime, lime.lime_tabular
 
 explainer = lime.lime_tabular.LimeTabularExplainer(np.array(X_train), feature_names=X_train.columns.to_list(), class_names=y_test.value_counts().index.to_list()
 , discretize_continuous=True)
@@ -117,7 +116,7 @@ explainer = lime.lime_tabular.LimeTabularExplainer(np.array(X_train), feature_na
 [y_test[y_test == y].index[0] for y in y_test.value_counts().index]
 
 # %%
-i = 93
+i = 149
 print(y_test.loc[i])
 
 exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
@@ -134,6 +133,7 @@ print(y_test.loc[i])
 
 exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
 exp.show_in_notebook(show_table=False, show_all=True)
+
 # %%
 
 #
