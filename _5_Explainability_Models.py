@@ -8,7 +8,9 @@ import plotly.express as plx
 # %%
 import _2_Preprocessing
 
-X_train, X_test, y_train, y_test = _2_Preprocessing.X_train, _2_Preprocessing.X_test, _2_Preprocessing.y_train, _2_Preprocessing.y_test
+df_name = "nursery"
+
+df, X_train, X_test, y_train, y_test =_2_Preprocessing.get_train_test_split(df_name)
 
 # %%
 
@@ -26,11 +28,11 @@ my_model = _4_Model_kNN.my_model
 import eli5
 from eli5.sklearn import PermutationImportance
 
-perm = PermutationImportance(my_model, random_state=1).fit(X_test, y_test)
+perm = PermutationImportance(my_model, random_state=1).fit(X_train, y_train)
 most_important_features_values = perm.feature_importances_[np.argsort(perm.feature_importances_)][-2:]
-most_important_features = X_test.columns[np.isin(perm.feature_importances_, most_important_features_values)]
+most_important_features = X_train.columns[np.isin(perm.feature_importances_, most_important_features_values)]
 
-eli5.show_weights(perm, feature_names = X_test.columns.tolist())
+eli5.show_weights(perm, feature_names = X_train.columns.tolist())
 
 # %%
 

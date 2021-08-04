@@ -18,8 +18,9 @@ from sklearn.preprocessing import MinMaxScaler
 import Objects.Interface_predict_explain as I_predict_explain
 # %%
 class my_KNeighborsClassifier(KNeighborsClassifier, I_predict_explain.Interface_predict_explain):
-    def __init__(self,  my_predict_proba_threshold = 0.75, my_neigh_dist = None, **kwargs):
-        super().__init__(**kwargs)
+    def __init__(self, n_neighbors=5, *, weights='uniform', algorithm='auto', leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=None,
+                 my_predict_proba_threshold = 0.75, my_neigh_dist = None, **kwargs):
+        super().__init__(n_neighbors=n_neighbors, weights=weights, algorithm=algorithm, leaf_size=leaf_size, p=p, metric=metric, metric_params=metric_params, n_jobs=n_jobs,**kwargs)
         self.my_predict_proba_threshold = my_predict_proba_threshold
         self.my_neigh_dist = my_neigh_dist
         self.my_neigh_dist_fraction_of_median = 0.5
