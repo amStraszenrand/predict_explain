@@ -11,14 +11,15 @@ import _2_Preprocessing
 df_name = "nursery"
 
 df, X_train, X_test, y_train, y_test =_2_Preprocessing.get_train_test_split(df_name)
-
+X_train
 # %%
 
 import _4_Model_kNN
 
-knn = _4_Model_kNN.knn
-dtc = _4_Model_kNN.dtc
 my_model = _4_Model_kNN.my_model
+logreg=_4_Model_kNN.logreg
+dtc = _4_Model_kNN.dtc
+rfc =_4_Model_kNN.rfc
 
 # %%
 #
@@ -29,24 +30,17 @@ import eli5
 from eli5.sklearn import PermutationImportance
 
 perm = PermutationImportance(my_model, random_state=1).fit(X_train, y_train)
-most_important_features_values = perm.feature_importances_[np.argsort(perm.feature_importances_)][-2:]
-most_important_features = X_train.columns[np.isin(perm.feature_importances_, most_important_features_values)]
 
 eli5.show_weights(perm, feature_names = X_train.columns.tolist())
+ # %%
+most_important_features_values = perm.feature_importances_[np.argsort(perm.feature_importances_)][-5:]
+most_important_features = X_train.columns[np.isin(perm.feature_importances_, most_important_features_values)]
+
 
 # %%
+perm = PermutationImportance(rfc, random_state=1).fit(X_train, y_train)
 
-#
-# ----- Get direction + amplitude of features -----
-#
-
-import shap  # package used to calculate Shap values
-
-explainer = shap.KernelExplainer(my_model.predict_proba, X_train)
-X_plot = X_train.head(10)
-shap_values = explainer.shap_values(X_plot)
-
-shap.summary_plot(shap_values[1], X_plot)
+eli5.show_weights(perm, feature_names = X_train.columns.tolist())
 
 # %%
 
@@ -54,23 +48,42 @@ shap.summary_plot(shap_values[1], X_plot)
 # ----- Get partial effects of features -----
 #
 
+X_train
+# %%
+
 from pdpbox import pdp, get_dataset, info_plots
 
-for feature_name in most_important_features:
+most_important_features = ["health_priority", "health_recommended", "parents_pretentious", "parents_usual", "has_nurs_improper",	"has_nurs_less_proper",	"has_nurs_proper",	"has_nurs_very_crit"]
+
+for feature_name in most_important_features[:1]:
     pdp_dist = pdp.pdp_isolate(model=my_model, dataset=X_test, model_features=X_test.columns.tolist(), feature=feature_name)
 
     pdp.pdp_plot(pdp_dist, feature_name)
+    plt.xlabel([1,2,3,4])
+
+
 plt.show()
+
+
+# %%
+
+
+from sklearn.ensemble.partial_dependence import partial_dependence, plot_partial_dependence
+
+# %%
+
+
+pip install sklearn.ensemble.partial_dependence
 
 # %%
 sample_data_for_prediction = X_test.iloc[0].astype(float)  # to test function
 
-def patient_risk_factors(model, patient_data):
+def shap_single_explainer(model, X_predict, X_backgroundt):
     # Create object that can calculate shap values
-    explainer = shap.KernelExplainer(model.predict_proba, X_train)
-    shap_values = explainer.shap_values(patient_data)
+    explainer = shap.KernelExplainer(model.predict_proba, X_backgroundt)
+    shap_values = explainer.shap_values(X_predict)
     shap.initjs()
-    return shap.force_plot(explainer.expected_value[1], shap_values[1], patient_data)
+    return shap.force_plot(explainer.expected_value[1], shap_values[1], X_predict)
 
 
 # %%
@@ -78,20 +91,35 @@ def patient_risk_factors(model, patient_data):
 #
 # ----- Get SHAPE explanation for some y -----
 #
-
+# %%
+y_test[y_test == "spec_prior"]
+# %%
 [y_test[y_test == y].index[0] for y in y_test.value_counts().index]
 # %%
-i = 93
+i = 11300
 print(y_test.loc[i])
-patient_risk_factors(my_model, X_test.loc[i])
+shap_single_explainer(my_model, X_test.loc[i], X100)
 # %%
-i = 113
+i = 6780
 print(y_test.loc[i])
-patient_risk_factors(my_model, X_test.loc[i])
+shap_single_explainer(my_model, X_test.loc[i], X100)
 # %%
-i = 7
+i = 8772
 print(y_test.loc[i])
-patient_risk_factors(my_model, X_test.loc[i])
+shap_single_explainer(my_model, X_test.loc[i], X100)
+
+# %%
+i = 9042
+print(y_test.loc[i])
+shap_single_explainer(my_model, X_test.loc[i], X100)
+# %%
+i = 8097
+print(y_test.loc[i])
+shap_single_explainer(my_model, X_test.loc[i], X100)
+# %%
+i = 5466
+print(y_test.loc[i])
+shap_single_explainer(my_model, X_test.loc[i], X100)
 
 # %%
 
@@ -99,6 +127,8 @@ patient_risk_factors(my_model, X_test.loc[i])
 # ----- Get feedback amplitude between two features -----
 #
 
+shap_values[1]
+# %%
 for feature_name in most_important_features:
     shap.dependence_plot(feature_name, shap_values[1], X_plot)
 
@@ -118,13 +148,34 @@ explainer = lime.lime_tabular.LimeTabularExplainer(np.array(X_train), feature_na
 [y_test[y_test == y].index[0] for y in y_test.value_counts().index]
 
 # %%
-i = 149
+i = 2449
 print(y_test.loc[i])
 
 exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
-exp.show_in_notebook(show_table=False, show_all=True)
+exp.show_in_notebook( show_table=True, show_all=True)
 # %%
-i = 113
+exp.save_to_file(f"Html/lime_explanation_{i}.html")
+# %%
+X_predict=X_test
+
+y_predict_explain =my_model.predict_explain(X_predict)
+
+
+# %%
+
+mask =(y_predict_explain["Prediction"] == "very_recom") & (y_predict_explain["Confidence"] == False)
+y_predict_explain[mask].to_csv("here.csv")
+
+
+# %%
+y_predict_explain.loc[7668, "Explanation"]
+
+
+
+
+
+# %%
+i = 6780
 print(y_test.loc[i])
 
 exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
@@ -135,42 +186,3 @@ print(y_test.loc[i])
 
 exp = explainer.explain_instance(X_test.loc[i], my_model.predict_proba, top_labels=1)
 exp.show_in_notebook(show_table=False, show_all=True)
-
-# %%
-
-#
-# ----- Get alepython explanation for some y -----
-#
-from alepython import ale_plot
-
-my_model.fit(X_train, y_train.map({"Iris-versicolor": 0, "Iris-setosa":1, "Iris-virginica":2}))
-
-plt.rc("figure", figsize=(9, 6))
-for feature_name in most_important_features:
-    ale_plot(
-        my_model,
-        X_train,
-        feature_name,
-        bins=20,
-        monte_carlo=True,
-        monte_carlo_rep=100,
-        monte_carlo_ratio=0.6,
-    )
-# %%
-
-
-# %%
-
-#
-# ----- Get ML.INTERPRET explanation for some y -----
-#
-
-from interpret.glassbox import ExplainableBoostingClassifier
-ebm = ExplainableBoostingClassifier(random_state=17)
-
-X_interpret = X_train.iloc[:10]
-y_interpret = y_train.iloc[:10]
-
-ebm.fit(X_interpret, y_interpret)
-# %%
-# %%

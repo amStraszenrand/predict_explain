@@ -5,6 +5,7 @@ import pandas as pd
 from matplotlib import pyplot as plt
 from pandas_profiling.config import Interactions
 import seaborn as sns
+import plotly
 import plotly.express as plx
 import altair as alt
 
@@ -17,38 +18,68 @@ df_name = "nursery"
 df, X_train, X_test, y_train, y_test =_2_Preprocessing.get_train_test_split(df_name)
 
 # %%
-fig = plx.histogram(df, x = "parents", color="class")
+plotly_colors = plx.colors.qualitative.Plotly[1:]
+y_plotly_colors = {y:plotly_colors[i] for i, y in enumerate(y_train.unique())}
+
+# %%
+feature ="parents"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "has_nurs", color="class")
+feature ="has_nurs"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "form", color="class")
+feature ="form"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "children", color="class")
+feature ="children"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "housing", color="class")
+feature ="housing"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "finance", color="class")
+feature ="finance"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "social", color="class")
+feature ="social"
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
-fig = plx.histogram(df, x = "health", color="class")
+feature ="health"
+
+fig = plx.histogram(df, x = feature, color="class", color_discrete_map=y_plotly_colors)
+fig.write_html(f"Html/histogram_{feature}.html")
+plotly.io.write_image(fig, f"Img/histogram_{feature}.svg")
 fig.show()
 
 # %%
+
 
 
 

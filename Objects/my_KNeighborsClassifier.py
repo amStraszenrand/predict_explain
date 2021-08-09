@@ -1,3 +1,19 @@
+# %%
+# %%
+from itertools import groupby
+import _2_Preprocessing
+
+df_name = "nursery"
+
+df, X_train, X_test, y_train, y_test =_2_Preprocessing.get_train_test_split(df_name)
+
+from imblearn.over_sampling import SMOTE
+
+smote = SMOTE()
+
+X_train_smote, y_train_smote = smote.fit_resample(X_train, y_train)
+
+# %%
 import numpy as np
 import pandas as pd
 
@@ -15,8 +31,12 @@ from sklearn.utils.validation import _num_samples
 from sklearn.preprocessing import Normalizer
 from sklearn.preprocessing import MinMaxScaler
 
+import plotly.express as plx
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+
 import Objects.Interface_predict_explain as I_predict_explain
-# %%
+
 class my_KNeighborsClassifier(KNeighborsClassifier, I_predict_explain.Interface_predict_explain):
     def __init__(self, n_neighbors=5, *, weights='uniform', algorithm='auto', leaf_size=30, p=2, metric='minkowski', metric_params=None, n_jobs=None,
                  my_predict_proba_threshold = 0.75, my_neigh_dist = None, **kwargs):
@@ -35,7 +55,7 @@ class my_KNeighborsClassifier(KNeighborsClassifier, I_predict_explain.Interface_
             self.my_neigh_dist = np.median(all_not_self_referred_distances) * self.my_neigh_dist_fraction_of_median
 
     
-    def predict_explain(self, X):
+    def predict_explain(self, X, plot_predict_explain = False, y_plotly_colors = None):
         """Raise explanaition of the prediction by reporting more results.
 
         Parameters
@@ -97,6 +117,10 @@ class my_KNeighborsClassifier(KNeighborsClassifier, I_predict_explain.Interface_
              "Explanation" : explanation,
              "Features_Distribution": features_distribution
             }, index = index_column)
+        
+        if plot_predict_explain and y_plotly_colors:
+            fig = self._create_plot(X, neigh_dist, neigh_classes, y_plotly_colors, index_column)
+            return answer, fig
         
         return answer
 
@@ -249,4 +273,71 @@ class my_KNeighborsClassifier(KNeighborsClassifier, I_predict_explain.Interface_
             features_distribution.append(feat)        
         
         return features_distribution
-# %%
+
+    def _create_plot(self, X, neigh_dist, neigh_classes, y_plotly_colors, index_column):
+        
+        for i, index in enumerate(index_column):
+            tempdf = pd.DataFrame({"neigh_classes": neigh_classes[i], "neigh_dist" : neigh_dist[i]})
+            
+            fig = plx.histogram(tempdf, x="neigh_dist", color = "neigh_classes",
+                                color_discrete_map=y_plotly_colors)
+            fig.update_layout(bargap=0.5)
+            fig.write_html(f"Figures/predict_explain_{index}.html")
+            
+        return fig
+        
+# # %%
+# my_model = my_KNeighborsClassifier(n_neighbors=16,  weights="distance", metric="manhattan")
+
+# my_model.fit(X_train_smote, y_train_smote)
+
+# from sklearn.metrics import classification_report
+
+# X_predict = X_test.iloc[:2]
+# y_predict_explain, plot_predict_explain, neigh_classes, neigh_dist =my_model.predict_explain(X_predict)
+
+# print("my_model:")
+# #print(classification_report(y_test.iloc[:2], y_predict_explain["Prediction"]))
+
+# print(neigh_classes)
+# print( neigh_dist)
+# # %%
+# plotly_colors = plx.colors.qualitative.Plotly
+
+# _costumdata = self.X.copy()
+# _costumdata["ID"] = _costumdata.index
+
+# _hovertemplate = ' '.join([f'{col}: ' + '%{customdata[' + str(i) + ']}<br>' for i, col in enumerate(_costumdata)])
+        
+
+# # %%
+# tempdf = pd.DataFrame({"neigh_classes": neigh_classes[0], "neigh_dist" : neigh_dist[0]})
+# fig = make_subplots(rows=1, cols=1)
+# for index, subtable in tempdf.groupby(["neigh_dist"]):
+#     print(index)
+#     print(subtable)
+#     fig.add_trace(
+#         go.Histogram(x = subtable["neigh_dist"],y=subtable["neigh_classes"]
+#                         ),
+#                         row=1, col=1
+#     )
+# fig.show()
+# # %%
+# X_predict
+# #%%
+# tempdf = pd.DataFrame({"neigh_classes": neigh_classes[1], "neigh_dist" : neigh_dist[1]})
+# fig = plx.histogram(tempdf, x="neigh_dist", color = "neigh_classes",
+#                     color_discrete_map={a:plotly_colors[i] for i, a in enumerate(y_train.value_counts().index)})
+# fig.update_layout(bargap=0.5)
+# fig.show()
+   
+# # %%
+# plotly_colors = plx.colors.qualitative.Plotly
+# plotly_colors
+# # %%
+# (lambda x: y_train.index.get_loc(x.index))
+# # %%
+
+# # %%
+
+# # %%

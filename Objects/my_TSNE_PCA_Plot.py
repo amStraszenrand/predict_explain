@@ -11,12 +11,13 @@ import plotly.graph_objects as go
 
 class Plot_TSNE_PCA():
     
-    def __init__(self, X_train, y_train, tsne_learning_rate = 100, height= 600, width = 800):
+    def __init__(self, X_train, y_train, y_plotly_colors, tsne_learning_rate = 100, height= 600, width = 800):
         self.tsne_learning_rate = tsne_learning_rate
         self.X, self.X_train = X_train.copy(), X_train.copy()
         self.y, self.y_train = y_train.copy(), y_train.copy()
         self.height, self.width = height, width
         self.y.name, self.y_train.name = y_train.name, y_train.name
+        self.y_plotly_colors = y_plotly_colors
 
     def TSNE(self, X_predict_explain=pd.DataFrame(), y_predict_explain=pd.DataFrame(columns=["Prediction", "Confidence"]), with_train_data = True):
         self.X_predict_explain = X_predict_explain
@@ -51,7 +52,6 @@ class Plot_TSNE_PCA():
             
     def _plot(self, X_plot, with_train_data):
         fig = make_subplots(rows=1, cols=1)
-        plotly_colors = plx.colors.qualitative.Plotly
 
         mask_train = self.y.index.isin(self.y_train.index)        
         X_train_plot = X_plot[mask_train]
@@ -69,7 +69,7 @@ class Plot_TSNE_PCA():
                             name=y_pred_expl_grouped, 
                             mode="markers",
                                 marker={
-                                    "color" : plotly_colors[self.y_train.unique().tolist().index(y_pred_expl_grouped)]
+                                    "color" : self.y_plotly_colors[y_pred_expl_grouped] 
                                     },
                                 customdata=_costumdata.loc[X_tsne_grouped.index],
                                 hovertemplate=_hovertemplate
@@ -89,8 +89,8 @@ class Plot_TSNE_PCA():
                                 name=str(y_pred_expl_grouped[0]) + " (predicted)",
                                 mode="markers",
                                 marker={
-                                    "line" : {"width" : 2},
-                                    "color" : plotly_colors[self.y_train.unique().tolist().index(y_pred_expl_grouped[0])]
+                                    "line" : {"width" : 1},
+                                    "color" : self.y_plotly_colors[y_pred_expl_grouped[0]] 
                                     },
                                 customdata=_costumdata.loc[X_tsne_grouped.index],
                                 hovertemplate=_hovertemplate
@@ -104,8 +104,8 @@ class Plot_TSNE_PCA():
                                 mode="markers",
                                 marker={
                                     "symbol" : "diamond",
-                                    "line" : {"width" : 2},
-                                    "color" : plotly_colors[self.y_predict_explain["Prediction"].unique().tolist().index(y_pred_expl_grouped[0])]
+                                    "line" : {"width" : 1},
+                                    "color" : self.y_plotly_colors[y_pred_expl_grouped[0]] 
                                     },
                                 customdata=_costumdata.loc[X_tsne_grouped.index],
                                 hovertemplate=_hovertemplate

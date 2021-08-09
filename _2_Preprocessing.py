@@ -46,4 +46,5 @@ def get_train_test_split(df_name):
         X = df.drop(["class"], axis = 1)
         y = df["class"]
         #y = df["class"].map({"not_recom": 0, "priority": 1, "recommend": 1, "spec_prior": 1, "very_recom": 1})[mask]
-        return df, *train_test_split(pd.get_dummies(X, drop_first=True), y, random_state=1, stratify=y, test_size=0.25)
+        return df, *train_test_split(pd.get_dummies(X, drop_first=False), y, random_state=1, stratify=y, test_size=0.25)
+        #return df, *train_test_split(X, y, random_state=1, stratify=y, test_size=0.25)

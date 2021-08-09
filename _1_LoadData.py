@@ -19,6 +19,6 @@ df_cells = pd.read_csv("Data/cell_samples.csv")
 # https://archive.ics.uci.edu/ml/machine-learning-databases/nursery/
 # https://citeseerx.ist.psu.edu/viewdoc/download?doi=10.1.1.142.2022&rep=rep1&type=pdf
 
-df_nursery = pd.read_csv("Data/nursery.data", index_col = False, names = ["parents", "has_nurs", "form", "children", "housing", "finance", "social", "health", "class"])
+df_nursery = pd.read_csv("Data/nursery_ordered.data", index_col = False, names = ["parents", "has_nurs", "form", "children", "housing", "finance", "social", "health", "class"])
 
 # %%
